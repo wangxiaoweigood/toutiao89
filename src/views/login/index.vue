@@ -6,10 +6,10 @@
         <img src="../../assets/img/logo_index.png" alt />
       </div>
       <!-- 登录表单容器 -->
-      <el-form style="margin-top:30px" :model="loginForm" :rules="loginRules">
-        <el-form-item prop="moblie">
+      <el-form ref="myForm" style="margin-top:30px" :model="loginForm" :rules="loginRules">
+        <el-form-item prop="mobile">
           <!-- 放置具体组件 登录手机号 -->
-          <el-input v-model="loginForm.moblie" placeholder="请输入手机号"></el-input>
+          <el-input v-model="loginForm.mobile" placeholder="请输入手机号"></el-input>
         </el-form-item>
         <el-form-item prop="code">
           <!-- 表单域 -->
@@ -22,7 +22,7 @@
         </el-form-item>
         <el-form-item>
           <!-- 登录框 -->
-          <el-button type="primary" style="width:100%">登录</el-button>
+          <el-button type="primary" style="width:100%" @click="submitLogin">登录</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -35,13 +35,13 @@ export default {
   data () {
     return {
       loginForm: {
-        moblie: '', // 手机号
+        mobile: '', // 手机号
         code: '', // 验证码框
         check: false // 勾选框
       },
       loginRules: {
         // 验证登录规则
-        moblie: [{ required: true, message: '请输入您的手机号' },
+        mobile: [{ required: true, message: '请输入您的手机号' },
           { pattern: /^1[3456789]\d{9}$/, message: '请输入合法的手机号' }
         ],
         code: [{ required: true, message: '请输入您得验证码' },
@@ -56,6 +56,28 @@ export default {
           }
         } }]
       }
+    }
+  },
+  methods: {
+    submitLogin () {
+      this.$refs.myForm.validate((isOK) => {
+        if (isOK) {
+          this.$axios({
+            url: '/authorizations', // 请求地址
+            method: 'post',
+            data: this.loginForm
+          }).then(result => {
+            // console.log(result)
+            window.localStorage.setItem('user-token', result.data.data.token) // 前端缓存令牌
+            this.$router.push('/home') // 跳转页面
+          }).catch(() => {
+            this.$message({
+              message: '手机号或验证码有误',
+              type: 'warning'
+            })
+          })
+        }
+      })
     }
   }
 }
